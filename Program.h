@@ -6,6 +6,8 @@
 #define PROYECTO_SO2_PROGRAM_H
 
 #include <string>
+#include <vector>
+
 using namespace std;
 
 enum CLI{
@@ -13,7 +15,8 @@ enum CLI{
     MOUNT,
     DEL,
     CREATE,
-    INVALID
+    INVALID,
+    EXIT
 };
 
 class Program {
@@ -24,6 +27,8 @@ private:
     bool terminate = false;
     string command="";
     CLI parseCommand(string command);
+    void split(const string &s, char delim, vector<string> &elems);
+    vector<string> split(const string &s, char delim);
 
     void executeCommand(string basic_string);
 };

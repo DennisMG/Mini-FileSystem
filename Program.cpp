@@ -2,6 +2,7 @@
 // Created by Dennis Molina on 8/17/16.
 //
 #include <iostream>
+#include <sstream>
 #include "Program.h"
 using namespace std;
 
@@ -20,7 +21,7 @@ int Program::Run() {
     cout<<".________________________________________________."<<endl<<endl;
 
     while(!terminate){
-        printf(">>");
+        printf("\n>>");
         getline(cin, command);
         executeCommand(command);
 
@@ -30,23 +31,59 @@ int Program::Run() {
 }
 
 CLI Program::parseCommand(string command) {
-    //cout<<command<<endl;
-    printf("%s\n",command.c_str());
-    return INVALID;
+    vector<string> tokens = split(command, ' ');
+    CLI token;
+    if(tokens[0] == "list"){
+        token = LIST;
+    }else if(tokens[0] == "mount"){
+        token = MOUNT;
+    }else if(tokens[0] == "del"){
+        token = DEL;
+    }else if(tokens[0] == "create"){
+        token = CREATE;
+    }else if(tokens[0] == "exit"){
+        token = EXIT;
+    }else{
+        token = INVALID;
+    }
+
+    return token;
 }
 
 void Program::executeCommand(string command) {
     switch (parseCommand(command)){
         case LIST:
+            printf("listing all partitions...");
             break;
         case MOUNT:
+            printf("Mounting partition...");
             break;
         case DEL:
+            printf("Deleting partition...");
             break;
         case CREATE:
+            printf("Creating partition...");
+            break;
+        case EXIT:
+            terminate=true;
+            printf("Exiting... Good Bye.\n");
             break;
         default:
             printf("Sorry, command not recognized\n");
 
+    }
+}
+
+vector<string> Program::split(const string &s, char delim) {
+    vector<string> elems;
+    split(s, delim, elems);
+    return elems;
+}
+
+void Program::split(const string &s, char delim, vector<string> &elems) {
+    stringstream ss(s);
+    string item;
+    while (getline(ss, item, delim)) {
+        elems.push_back(item);
     }
 }

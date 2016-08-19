@@ -55,8 +55,8 @@
       <file leaf-file-name="Program.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Program.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="232">
-              <caret line="18" column="60" selection-start-line="18" selection-start-column="60" selection-end-line="18" selection-end-column="60" />
+            <state relative-caret-position="172">
+              <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
               <folding>
                 <element signature="e#46#65#0" expanded="true" />
               </folding>
@@ -67,9 +67,11 @@
       <file leaf-file-name="Program.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Program.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" column="11" selection-start-line="15" selection-start-column="11" selection-end-line="15" selection-end-column="11" />
-              <folding />
+            <state relative-caret-position="217">
+              <caret line="29" column="49" selection-start-line="29" selection-start-column="49" selection-end-line="29" selection-end-column="49" />
+              <folding>
+                <element signature="e#110#127#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -336,12 +338,12 @@
       <option name="presentableId" value="Default" />
       <updated>1471496381726</updated>
       <workItem from="1471496384785" duration="1829000" />
-      <workItem from="1471569414894" duration="3401000" />
+      <workItem from="1471569414894" duration="4618000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="5230000" />
+    <option name="totallyTimeSpent" value="6447000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
@@ -415,7 +417,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
           <caret line="11" column="14" selection-start-line="11" selection-start-column="14" selection-end-line="11" selection-end-column="14" />
-          <folding />
+          <folding>
+            <element signature="e#110#127#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -467,16 +471,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Program.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="11" selection-start-line="15" selection-start-column="11" selection-end-line="15" selection-end-column="11" />
-          <folding />
+        <state relative-caret-position="217">
+          <caret line="29" column="49" selection-start-line="29" selection-start-column="49" selection-end-line="29" selection-end-column="49" />
+          <folding>
+            <element signature="e#110#127#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Program.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="232">
-          <caret line="18" column="60" selection-start-line="18" selection-start-column="60" selection-end-line="18" selection-end-column="60" />
+        <state relative-caret-position="172">
+          <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
           <folding>
             <element signature="e#46#65#0" expanded="true" />
           </folding>
