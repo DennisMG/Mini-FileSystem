@@ -26,7 +26,7 @@ public:
 private:
     bool terminate = false;
     string command="";
-    CLI parseCommand(string command);
+    CLI getCommand(string command);
     void split(const string &s, char delim, vector<string> &elems);
     vector<string> split(const string &s, char delim);
 

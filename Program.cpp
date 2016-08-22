@@ -4,6 +4,8 @@
 #include <iostream>
 #include <sstream>
 #include "Program.h"
+#include "Partition.h"
+
 using namespace std;
 
 Program::Program() {
@@ -30,7 +32,7 @@ int Program::Run() {
     return 0;
 }
 
-CLI Program::parseCommand(string command) {
+CLI Program::getCommand(string command) {
     vector<string> tokens = split(command, ' ');
     CLI token;
     if(tokens[0] == "list"){
@@ -51,19 +53,25 @@ CLI Program::parseCommand(string command) {
 }
 
 void Program::executeCommand(string command) {
-    switch (parseCommand(command)){
+    vector<string> parameters = split(command,' ');
+    switch (getCommand(command)){
         case LIST:
-            printf("listing all partitions...");
+            printf("listing all partitions...\n");
             break;
         case MOUNT:
-            printf("Mounting partition...");
+            printf("Mounting partition...\n");
             break;
         case DEL:
-            printf("Deleting partition...");
+            printf("Deleting partition...\n");
             break;
-        case CREATE:
-            printf("Creating partition...");
+        case CREATE: {
+            printf("Creating partition...\n");
+            Partition *partition = new Partition();
+            if (parameters.size() > 3)
+                printf("ERROR: Invalid number of arguments! expected 2, received %d\n", ((int) parameters.size())-1);
+            partition->createPartition("", 100);
             break;
+        }
         case EXIT:
             terminate=true;
             printf("Exiting... Good Bye.\n");
@@ -84,6 +92,7 @@ void Program::split(const string &s, char delim, vector<string> &elems) {
     stringstream ss(s);
     string item;
     while (getline(ss, item, delim)) {
-        elems.push_back(item);
+        if (!item.empty())
+            elems.push_back(item);
     }
 }
