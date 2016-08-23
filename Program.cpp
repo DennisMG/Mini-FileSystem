@@ -14,13 +14,13 @@ Program::Program() {
 }
 
 int Program::Run() {
-    cout<<".------------Welcome to My File System-----------."<<endl;
-    cout<<"|    What do you want to do?                     |  "<<endl;
-    cout<<"|1. List Partitions:     list                    |"<<endl;
-    cout<<"|2. Mount Partition:     mount <partition_name>  |"<<endl;
-    cout<<"|3. Delete Partition:    del <partition_name>    |"<<endl;
-    cout<<"|4. Create Partition:    create <partition_name> |"<<endl;
-    cout<<".________________________________________________."<<endl<<endl;
+    cout<<".---------------------Welcome to My File System--------------------."<<endl;
+    cout<<"|    What do you want to do?                                       |  "<<endl;
+    cout<<"|1. List Partitions:     list                                      |"<<endl;
+    cout<<"|2. Mount Partition:     mount <partition_name>                    |"<<endl;
+    cout<<"|3. Delete Partition:    del <partition_name>                      |"<<endl;
+    cout<<"|4. Create Partition:    create <partition_name> <size_mb> <MB/GB> |"<<endl;
+    cout<<".__________________________________________________________."<<endl<<endl;
 
     while(!terminate){
         printf("\n>>");
@@ -66,10 +66,13 @@ void Program::executeCommand(string command) {
             break;
         case CREATE: {
             printf("Creating partition...\n");
+            //int size = stoi(parameters[2]);
+            //printf("%d",size);
             Partition *partition = new Partition();
-            if (parameters.size() > 3)
-                printf("ERROR: Invalid number of arguments! expected 2, received %d\n", ((int) parameters.size())-1);
-            partition->createPartition("", 100);
+            if (parameters.size() > 4)
+                printf("ERROR: Invalid number of arguments! expected 3, received %d\n", ((int) parameters.size())-1);
+            else
+                partition->createPartition(parameters[1], parameters[2], parameters[3]);
             break;
         }
         case EXIT:
