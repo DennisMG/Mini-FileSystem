@@ -9,7 +9,7 @@
 using namespace std;
 
 Program::Program() {
-
+    partition = new Partition();
 
 }
 
@@ -53,6 +53,7 @@ CLI Program::getCommand(string command) {
 }
 
 void Program::executeCommand(string command) {
+
     vector<string> parameters = split(command,' ');
     switch (getCommand(command)){
         case LIST:
@@ -60,6 +61,7 @@ void Program::executeCommand(string command) {
             break;
         case MOUNT:
             printf("Mounting partition...\n");
+            partition->mountPartition(parameters[1]);
             break;
         case DEL:
             printf("Deleting partition...\n");
@@ -68,7 +70,7 @@ void Program::executeCommand(string command) {
             printf("Creating partition...\n");
             //int size = stoi(parameters[2]);
             //printf("%d",size);
-            Partition *partition = new Partition();
+
             if (parameters.size() > 4)
                 printf("ERROR: Invalid number of arguments! expected 3, received %d\n", ((int) parameters.size())-1);
             else

@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include "Partition.h"
 
 using namespace std;
 
@@ -24,6 +25,7 @@ public:
     Program();
     int Run();
 private:
+    Partition *partition;
     bool terminate = false;
     string command="";
     CLI getCommand(string command);
