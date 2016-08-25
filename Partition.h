@@ -9,15 +9,15 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-using namespace std;
-class Partition {
-private:
-    string Name, Path;
-    int Size_Byte;
-    bool Mounted;
-    fstream partition;
-public:
+#include <vector>
 
+using namespace std;
+
+class Partition {
+
+
+public:
+    Partition();
 
     void createPartition(string name, string size_byte, string unit);
     void deletePartition(string name);
@@ -28,6 +28,23 @@ public:
 
 
     void partitionManager();
+
+private:
+    string Name, Path;
+    int Size_Byte;
+    bool Mounted;
+    fstream partition;
+
+
+    void runCommand(string command);
+
+    int getCommandID(string command);
+
+    void split(const string &s, char delim, vector<string> &elems);
+    vector<string> split(const string &s, char delim);
+
+
+
 };
 
 
