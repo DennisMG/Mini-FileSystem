@@ -44,6 +44,8 @@ CLI Program::getCommand(string command) {
         token = CREATE;
     }else if(tokens[0] == "exit"){
         token = EXIT;
+    }else if(tokens[0] == "format"){
+        token = FORMAT;
     }else{
         token = INVALID;
     }
@@ -79,6 +81,9 @@ void Program::executeCommand(string command) {
         case EXIT:
             terminate=true;
             printf("Exiting... Good Bye.\n");
+            break;
+        case FORMAT:
+            partition->formatPartition(parameters[1],0);
             break;
         default:
             printf("Sorry, command not recognized\n");

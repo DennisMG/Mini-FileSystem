@@ -17,7 +17,8 @@ enum CLI{
     DEL,
     CREATE,
     INVALID,
-    EXIT
+    EXIT,
+    FORMAT
 };
 
 class Program {

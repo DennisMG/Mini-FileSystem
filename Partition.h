@@ -26,7 +26,7 @@ public:
     void formatPartition(string name);
     void mountPartition(string partition_name);
     void unMountPartition(string partition_name);
-
+    void formatPartition(string name, int size_in_bytes);
 
     void partitionManager();
 
@@ -49,7 +49,7 @@ private:
     vector<string> split(const string &s, char delim);
 
 
-    void formatPartition(string name, int size_in_bytes);
+
 };
 
 

@@ -32,7 +32,7 @@ void Partition::createPartition(string name, string size_byte, string unit) {
     system(command.c_str());
     printf("Partition created successfully\n");
 
-    formatPartition(name,0);
+    //formatPartition(name,0);
 
 
 }
@@ -42,6 +42,7 @@ void Partition::deletePartition(string name) {
 }
 
 void Partition::formatPartition(string name, int size_in_bytes){
+    string temp_name = name;
     name.resize(50,' ');
 
     stringstream ss;
@@ -49,11 +50,12 @@ void Partition::formatPartition(string name, int size_in_bytes){
 
     time_t t = time(0);
 
-    partition.open("./../" + name + ".par", ios::out | ios::in | ios::binary);
+    partition.open("./../" + temp_name + ".par", ios::out | ios::in | ios::binary);
     if (partition.is_open()){
         partition.seekg (0, ios::beg);
         partition.write( ss.str().c_str(),50);
         partition.close();
+        printf("Successfully formated.\n");
     }else{
         printf("Could not open file\n");
     }
@@ -115,6 +117,10 @@ void Partition::runCommand(string command) {
             unMountPartition(Name);
             printf("Finished unmounting.\n");
             break;
+        case 3:
+            formatPartition(Name,0);
+            printf("Finished unmounting.\n");
+            break;
         default:
             printf("Command not recognized.\n");
     }
@@ -128,6 +134,8 @@ int Partition::getCommandID(string command) {
         command_id = 1;
     }else if(tokens[0].compare("unmount") == 0){
         command_id = 2;
+    }else if(tokens[0].compare("format") == 0){
+        command_id = 3;
     }else{
         command_id = -1;
     }
