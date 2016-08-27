@@ -18,7 +18,7 @@ void Partition::listPartitions() {
 void Partition::createPartition(string name, string size_byte, string unit) {
     fstream myFile;
     Name = name;
-    Path = "./../" + name + ".par";
+    Path = name + ".par";
 
     if(unit.compare("mb") == 0 || unit.compare("MB") == 0 )
         partition_size_bytes = stoi(size_byte) * 1024;
@@ -50,7 +50,7 @@ void Partition::formatPartition(string name, int size_in_bytes){
 
     time_t t = time(0);
 
-    partition.open("./../" + temp_name + ".par", ios::out | ios::in | ios::binary);
+    partition.open(temp_name + ".par", ios::out | ios::in | ios::binary);
     if (partition.is_open()){
         partition.seekg (0, ios::beg);
         partition.write( ss.str().c_str(),50);
@@ -72,7 +72,7 @@ void Partition::formatPartition(string name) {
 void Partition::mountPartition(string partition_name) {
     printf("Mounting...\n");
 
-    partition.open("./../" + partition_name + ".par", ios::out | ios::in | ios::binary);
+    partition.open(partition_name + ".par", ios::out | ios::in | ios::binary);
     if (partition.is_open()){
         Name = partition_name;
         printf("Partition mounted...\n");
