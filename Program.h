@@ -17,7 +17,8 @@ enum CLI{
     DEL,
     CREATE,
     INVALID,
-    EXIT
+    EXIT,
+    FORMAT
 };
 
 class Program {
@@ -25,7 +26,7 @@ public:
     Program();
     int Run();
 private:
-    Partition *partition;
+   Partition * partition;
     bool terminate = false;
     string command="";
     CLI getCommand(string command);

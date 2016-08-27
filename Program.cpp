@@ -4,7 +4,6 @@
 #include <iostream>
 #include <sstream>
 #include "Program.h"
-#include "Partition.h"
 
 using namespace std;
 
@@ -20,7 +19,7 @@ int Program::Run() {
     cout<<"|2. Mount Partition:     mount <partition_name>                    |"<<endl;
     cout<<"|3. Delete Partition:    del <partition_name>                      |"<<endl;
     cout<<"|4. Create Partition:    create <partition_name> <size_mb> <MB/GB> |"<<endl;
-    cout<<".__________________________________________________________."<<endl<<endl;
+    cout<<".__________________________________________________________________."<<endl<<endl;
 
     while(!terminate){
         printf("\n>>");
@@ -45,6 +44,8 @@ CLI Program::getCommand(string command) {
         token = CREATE;
     }else if(tokens[0] == "exit"){
         token = EXIT;
+    }else if(tokens[0] == "format"){
+        token = FORMAT;
     }else{
         token = INVALID;
     }
@@ -80,6 +81,9 @@ void Program::executeCommand(string command) {
         case EXIT:
             terminate=true;
             printf("Exiting... Good Bye.\n");
+            break;
+        case FORMAT:
+            partition->formatPartition(parameters[1],0);
             break;
         default:
             printf("Sorry, command not recognized\n");
