@@ -2,16 +2,18 @@
 <module type="CPP_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/Partition.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/FreeBlockBitMap.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Partition.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Program.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/main.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Partition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/INode.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/FreeBlockBitMap.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Block.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Block.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/INode.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Program.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Partition.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/FreeBlockBitMap.h" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">

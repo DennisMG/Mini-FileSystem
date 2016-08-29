@@ -19,6 +19,8 @@ int Program::Run() {
     cout<<"|2. Mount Partition:     mount <partition_name>                    |"<<endl;
     cout<<"|3. Delete Partition:    del <partition_name>                      |"<<endl;
     cout<<"|4. Create Partition:    create <partition_name> <size_mb> <MB/GB> |"<<endl;
+    cout<<"|5.                                                                |"<<endl;
+
     cout<<".__________________________________________________________________."<<endl<<endl;
 
     while(!terminate){

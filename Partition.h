@@ -12,7 +12,10 @@
 #include <vector>
 
 #define MAX_NAME_SIZE_BYTES 50
+
 using namespace std;
+
+
 
 class Partition {
 
@@ -26,14 +29,16 @@ public:
     void formatPartition(string name);
     void mountPartition(string partition_name);
     void unMountPartition(string partition_name);
-    void formatPartition(string name, int size_in_bytes);
+    void formatPartition(string partition_name, int size_in_bytes);
 
     void partitionManager();
 
 private:
-
+    const int FAT_LOCATION = 74;
     //const int MAX_NAME_SIZE_BYTES = 50;
     const int BLOCK_SIZE_BYTES = 4096;
+    const int MAX_FAT_ENTRIES = 512;
+    const int ENTRY_LENGTH = 72;
 
     string Name, Path;
     int partition_size_bytes;
@@ -44,12 +49,16 @@ private:
     void runCommand(string command);
 
     int getCommandID(string command);
-
+    void writeMasterBlock(string partitionName, int _FAT_pointer, int bitmap_pointer, int data_pointer,
+                          int total_of_blocks, long creation_date);
+    void readMasterBlock();
     void split(const string &s, char delim, vector<string> &elems);
     vector<string> split(const string &s, char delim);
 
 
+    void writeFAT();
 
+    void createFile(string file_name);
 };
 
 
