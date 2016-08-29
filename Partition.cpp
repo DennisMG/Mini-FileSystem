@@ -52,7 +52,7 @@ void Partition::formatPartition(string partition_name, int size_in_bytes){
 
     writeMasterBlock(partition_name,_FAT_pointer,bitmap_pointer,data_pointer,total_of_blockes,t);
     writeFAT();
-    partition.close();
+   // partition.close();
     printf("Successfully formated.\n");
 
 
@@ -70,7 +70,9 @@ void Partition::mountPartition(string partition_name) {
 
     partition.open(partition_name + ".par", ios::out | ios::in | ios::binary);
     if (partition.is_open()){
+        partition.close();
         Name = partition_name;
+        Path = Name + ".par";
         printf("Partition mounted...\n");
         Mounted = true;
         partitionManager();
@@ -121,6 +123,10 @@ void Partition::runCommand(string command) {
             createFile(tokens[1]);
             printf("File created!!\n");
             break;
+        case 5:
+            listFiles(Path);
+            printf("\n\n");
+            break;
         default:
             printf("Command not recognized.\n");
     }
@@ -138,6 +144,8 @@ int Partition::getCommandID(string command) {
         command_id = 3;
     }else if(tokens[0].compare("touch") == 0){
         command_id = 4;
+    }else if(tokens[0].compare("ls") == 0){
+        command_id = 5;
     }else{
         command_id = -1;
     }
@@ -189,11 +197,9 @@ void Partition::readMasterBlock() {
 
 void Partition::writeFAT() {
     INode newNode;
-    newNode.status = -1;
     partition.open(Path, ios::out | ios::in | ios::binary);
     if(partition.is_open()){
         partition.seekp (FAT_LOCATION);
-        printf("size of short int: %d\n",sizeof(newNode.status));
         partition.write( reinterpret_cast<const char *>(&newNode.status),sizeof(newNode.status));
         partition.close();
     }else{
@@ -203,33 +209,40 @@ void Partition::writeFAT() {
 }
 
 void Partition::createFile(string file_name) {
-    short int status;
-    INode newNode;
+    bool status;
+    INode *newNode = new INode();
     int entry = FAT_LOCATION;
-    partition.open(Path, ios::out | ios::in | ios::binary);
     time_t t = time(0);
+
+    partition.open(Path, ios::out | ios::in | ios::binary);
+
     if(partition.is_open()){
         int i;
         for(i = 0 ; i<MAX_FAT_ENTRIES ; i++){
+
             partition.seekg(entry);
             partition.read(reinterpret_cast<char *>(&status), sizeof(status));
+            //printf("status: %d\n", status);
 
-            if(status == 1){
-
-                printf("entry position occupied: %d\n",entry);
+            if(status){
+                //printf("entry position occupied: %d\n",entry);
                 entry += ENTRY_LENGTH;
                 //Entry is occupied, move to the next.
             }else{
-                printf("entry position available, writing file... entry: %d\n",entry);
-                newNode.status = 1;
+                //printf("entry position available, writing file... entry: %d\n",entry);
+                newNode->status = true;
 
                 partition.seekp(entry);
-                partition.write( reinterpret_cast<const char *>(&newNode.status), sizeof(newNode.status));
+                partition.write(reinterpret_cast<const char *>(&newNode->status), sizeof(newNode->status));
                 partition.write( file_name.c_str(),50);
-                partition.write( reinterpret_cast<const char *>(&newNode.first_block), sizeof(newNode.first_block));
-                partition.write( reinterpret_cast<const char *>(&newNode.last_block), sizeof(newNode.last_block));
                 partition.write( reinterpret_cast<const char *>(&t), sizeof(t));
-                partition.write( reinterpret_cast<const char *>(&newNode.size), sizeof(newNode.size));
+                partition.write( reinterpret_cast<const char *>(&newNode->size), sizeof(newNode->size));
+                partition.write( reinterpret_cast<const char *>(&newNode->first_block), sizeof(newNode->first_block));
+                partition.write( reinterpret_cast<const char *>(&newNode->last_block), sizeof(newNode->last_block));
+
+
+                partition.flush();
+                partition.close();
                 break;
             }
 
@@ -239,12 +252,66 @@ void Partition::createFile(string file_name) {
 
 
 
-        partition.close();
+
 
 
     }else{
-        printf("ERROR: Could not file master block\n");
+        printf("ERROR: Could not open file.\n");
     }
+}
+
+void Partition::listFiles(string partition_name) {
+    bool status;
+    INode *newNode = new INode();
+    int entry = FAT_LOCATION;
+    time_t t;
+    char name[50];
+    int size;
+
+    partition.open(Path, ios::out | ios::in | ios::binary);
+
+    if(partition.is_open()){
+        int i;
+        for(i = 0 ; i<MAX_FAT_ENTRIES ; i++){
+
+            partition.seekg(entry);
+            partition.read(reinterpret_cast<char *>(&status), sizeof(status));
+
+            if(status){
+
+                partition.read(name, 50);
+                partition.read(reinterpret_cast<char *>(&t),sizeof(t)); //FECHA
+                partition.read(reinterpret_cast<char *>(&size),sizeof(size)); //FECHA
+
+                tm* localtm = localtime(&t);
+                printf("%s\t\t",name);
+                printf("%d BYTES\t\t\t\t",size);
+                printf("Created: %s", asctime(localtm));
+
+                //Entry is occupied, move to the next.
+            }else{
+                newNode->status = true;
+
+                partition.seekp(entry);
+                partition.read(reinterpret_cast<char *>(&newNode->status), sizeof(newNode->status));
+
+
+            }
+            entry += ENTRY_LENGTH;
+
+        }
+
+
+
+        partition.close();
+
+
+
+
+    }else{
+        printf("ERROR: Could not open file.\n");
+    }
+
 }
 
 

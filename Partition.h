@@ -35,10 +35,9 @@ public:
 
 private:
     const int FAT_LOCATION = 74;
-    //const int MAX_NAME_SIZE_BYTES = 50;
-    const int BLOCK_SIZE_BYTES = 4096;
+    const int BLOCK_SIZE = 4096;
     const int MAX_FAT_ENTRIES = 512;
-    const int ENTRY_LENGTH = 72;
+    const int ENTRY_LENGTH = 71;
 
     string Name, Path;
     int partition_size_bytes;
@@ -59,6 +58,8 @@ private:
     void writeFAT();
 
     void createFile(string file_name);
+
+    void listFiles(string partition_name);
 };
 
 

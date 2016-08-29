@@ -6,15 +6,13 @@
 #define PROYECTO_SO2_INODE_H
 
 /*  STATUS CODES
- * Deleted         -1
+ * Deleted          0
  * Exist            1
- * End of FAT       0
- * New file         2
  * */
 
 class INode {
 public:
-    short int status = -1;
+    bool status = 0;
     char file_name[50];
     int first_block=0;
     int last_block=0;
