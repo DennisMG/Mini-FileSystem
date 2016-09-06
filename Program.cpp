@@ -14,7 +14,8 @@ Program::Program() {
 }
 
 int Program::Run() {
-    printf("iNode size: %d\n",sizeof(INode) );
+    INode FAT[128];
+    printf("iNode size: %d\n",sizeof(FAT) );
     cout<<".---------------------Welcome to My File System--------------------."<<endl;
     cout<<"|    What do you want to do?                                       |  "<<endl;
     cout<<"|1. List Partitions:     ls                                        |"<<endl;

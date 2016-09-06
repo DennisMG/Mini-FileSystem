@@ -20,18 +20,18 @@ void Partition::createPartition(string name, string size_byte, string unit) {
     Path = name + ".fs";
 
     if(unit.compare("mb") == 0 || unit.compare("MB") == 0 )
-        partition_size_bytes = stoi(size_byte) * 1024;
+        partition_size_kb = stoi(size_byte) * 1024;
     else if(unit.compare("GB") == 0 || unit.compare("gb") == 0 )
-        partition_size_bytes = stoi(size_byte) * 1024 * 1024;
+        partition_size_kb = stoi(size_byte) * 1024 * 1024;
     else{
         printf("ERROR: invalid unit");
         return;
     }
-    string command = "dd if=/dev/zero of=" + Path + " bs=1024 count=" + to_string(partition_size_bytes);
+    string command = "dd if=/dev/zero of=" + Path + " bs=1024 count=" + to_string(partition_size_kb);
     system(command.c_str());
     printf("Partition created successfully\n");
 
-    formatPartition(name,stoi(size_byte));
+    formatPartition(name,partition_size_kb);
 
 
 }
@@ -40,22 +40,22 @@ void Partition::deletePartition(string name) {
 
 }
 
-void Partition::formatPartition(string partition_name, int size_in_bytes){
+void Partition::formatPartition(string partition_name, int size_in_kb){
 
-    int _FAT_pointer= 74;
-    int bitmap_pointer = 1;
+    int _FAT_pointer= 1 * BLOCK_SIZE;
+    int bitmap_pointer = 2 * BLOCK_SIZE;
     int data_pointer = 1;
-    int total_of_blockes = 1;
+    int total_blocks = size_in_kb/4;  /* size in kb/block size in kb (4Kb) */
+    printf("number of blocks: %d\n",total_blocks);
 
     partition_name.resize(50,' ');
     time_t t = time(0);
 
-    writeMasterBlock(partition_name,_FAT_pointer,bitmap_pointer,data_pointer,total_of_blockes,t);
+    writeMasterBlock(partition_name,_FAT_pointer,bitmap_pointer,data_pointer,total_blocks,t);
     writeFAT();
+    writeNewBitmap(total_blocks/8);
    // partition.close();
     printf("Successfully formated.\n");
-
-
 }
 
 void Partition::formatPartition(string name) {
@@ -120,11 +120,11 @@ void Partition::runCommand(string command) {
             printf("Finished unmounting.\n");
             break;
         case 4:
-            createFile(tokens[1]);
+            createFileV2(tokens[1]);
             printf("File created!!\n");
             break;
         case 5:
-            listFiles(Path);
+            listFilesV2(Path);
             printf("\n\n");
             break;
         default:
@@ -208,6 +208,35 @@ void Partition::writeFAT() {
 
 }
 
+void Partition::createFileV2(string file_name){
+    INode newNode;
+    int entry = getBlockPosition(1);
+    newNode.creation_date = time(0);
+    strcpy(newNode.file_name,file_name.c_str());
+    //newNode.file_name = file_name.c_str();
+
+    partition.open(Path, ios::out | ios::in | ios::binary);
+    if(partition.is_open()){
+        partition.seekg(entry);
+        partition.read(reinterpret_cast<char *>(&FAT), BLOCK_SIZE);
+        for(int i = 0 ; i < sizeof(FAT)/sizeof(INode) ; i++){
+            if(FAT[i].status == 0){
+                FAT[i].status = 1;
+                strcpy(FAT[i].file_name,file_name.c_str());
+                FAT[i].creation_date = time(0);
+                FAT[i].first_block=0;
+                FAT[i].size=0;
+                break;
+            }
+        }
+        partition.seekp(entry);
+        partition.write(reinterpret_cast<const char *>(&FAT), BLOCK_SIZE);
+    }
+
+    partition.close();
+
+}
+
 void Partition::createFile(string file_name) {
     bool status;
     INode *newNode = new INode();
@@ -253,6 +282,27 @@ void Partition::createFile(string file_name) {
     }else{
         printf("ERROR: Could not open file.\n");
     }
+}
+
+void Partition::listFilesV2(string partition_name){
+    int entry = getBlockPosition(1);
+
+    partition.open(Path, ios::out | ios::in | ios::binary);
+    if(partition.is_open()){
+        partition.seekg(entry);
+        partition.read(reinterpret_cast<char *>(&FAT), BLOCK_SIZE);
+        for(int i = 0 ; i < sizeof(FAT)/sizeof(INode) ; i++){
+            if(FAT[i].status == 1){
+                printf("%s\t\t",FAT[i].file_name);
+                printf("%d BYTES\t\t\t\t",FAT[i].size);
+                tm* localtm = localtime(&FAT[i].creation_date);
+                printf("Created: %s", asctime(localtm));
+
+            }
+        }
+    }
+
+    partition.close();
 }
 
 void Partition::listFiles(string partition_name) {
@@ -311,6 +361,67 @@ void Partition::listFiles(string partition_name) {
 
 int Partition::getBlockPosition(int block) {
     return block * BLOCK_SIZE;
+}
+
+void Partition::readBitmap() {
+    int blockOffset = getBlockPosition(2);
+
+    partition.open(Path, ios::out | ios::in | ios::binary);
+    if(partition.is_open()){
+        partition.seekg(blockOffset);
+        partition.read(reinterpret_cast<char *>(&Bitmap), BLOCK_SIZE);
+        for(int i = 0 ; i < sizeof(FAT) / sizeof(INode) ; i++){
+
+            }
+        }
+
+}
+
+void Partition::writeBitmap() {
+
+}
+
+void Partition::writeNewBitmap(int bitmap_size_bytes) {
+    printf("number of bytes: %d\n", bitmap_size_bytes);
+    int blockOffset = getBlockPosition(2);
+    Bitmap.resize(bitmap_size_bytes, 0);
+    bitmapSet( &Bitmap[0], 0);
+    bitmapSet(&Bitmap[0], 1);
+
+    if (bitmap_size_bytes <= 4096){
+        bitmapSet(&Bitmap[0], 2);
+    }else{ //8192
+        int word = 0;
+        int busy_blocks = bitmap_size_bytes/BLOCK_SIZE;//0
+        int bit = 2;
+        for(; bit <= 8 ; bit++){//bit = 2
+            if(busy_blocks == 0)
+                break;
+
+            if(bit == 8 ){
+                bit=0;
+                word++;
+            }else{
+                bitmapSet(&Bitmap[word], bit);
+                busy_blocks--;
+            }
+
+        }
+
+    }
+    printf("Bitmap[0]: %c\n", Bitmap[0]);
+    printf("size of Bitmap: %d\n", sizeof(Bitmap));
+    printf("size of byte: %d\n", sizeof(byte));
+
+    partition.open(Path, ios::out | ios::in | ios::binary);
+
+    if(partition.is_open()){
+        partition.seekp(blockOffset);
+        partition.write( reinterpret_cast<const char *>(&Bitmap),sizeof(Bitmap));
+
+    }
+    partition.close();
+
 }
 
 

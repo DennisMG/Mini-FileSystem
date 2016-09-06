@@ -8,13 +8,15 @@
 #define PROYECTO_SO2_FREEBLOCKBITMAP_H
 
 #include <bitset>         // std::bitset
+#include <vector>
+#include "bitmap.h"
 
 using namespace std;
 
 class FreeBlockBitMap {
 public:
     FreeBlockBitMap();
-    bitset<16> foo;
+    vector<byte> Bitmap;
 
 };
 
