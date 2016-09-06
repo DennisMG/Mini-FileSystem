@@ -17,7 +17,7 @@ void Partition::listPartitions() {
 
 void Partition::createPartition(string name, string size_byte, string unit) {
     Name = name;
-    Path = name + ".par";
+    Path = name + ".fs";
 
     if(unit.compare("mb") == 0 || unit.compare("MB") == 0 )
         partition_size_bytes = stoi(size_byte) * 1024;
@@ -68,11 +68,11 @@ void Partition::formatPartition(string name) {
 void Partition::mountPartition(string partition_name) {
     printf("Mounting...\n");
 
-    partition.open(partition_name + ".par", ios::out | ios::in | ios::binary);
+    partition.open(partition_name + ".fs", ios::out | ios::in | ios::binary);
     if (partition.is_open()){
         partition.close();
         Name = partition_name;
-        Path = Name + ".par";
+        Path = Name + ".fs";
         printf("Partition mounted...\n");
         Mounted = true;
         partitionManager();
@@ -171,7 +171,7 @@ void Partition::split(const string &s, char delim, vector<string> &elems) {
 
 void Partition::writeMasterBlock(string partitionName, int _FAT_pointer, int bitmap_pointer, int data_pointer,
                                  int total_of_blocks, long creation_date) {
-    string _partition_name = partitionName + ".par";
+    string _partition_name = partitionName + ".fs";
     partition.open(Path, ios::out | ios::in | ios::binary);
 
     if(partition.is_open()){
@@ -199,7 +199,7 @@ void Partition::writeFAT() {
     INode newNode;
     partition.open(Path, ios::out | ios::in | ios::binary);
     if(partition.is_open()){
-        partition.seekp (FAT_LOCATION);
+        partition.seekp (getBlockPosition(1));
         partition.write( reinterpret_cast<const char *>(&newNode.status),sizeof(newNode.status));
         partition.close();
     }else{
@@ -211,7 +211,7 @@ void Partition::writeFAT() {
 void Partition::createFile(string file_name) {
     bool status;
     INode *newNode = new INode();
-    int entry = FAT_LOCATION;
+    int entry = getBlockPosition(1);
     time_t t = time(0);
 
     partition.open(Path, ios::out | ios::in | ios::binary);
@@ -225,35 +225,30 @@ void Partition::createFile(string file_name) {
             //printf("status: %d\n", status);
 
             if(status){
-                //printf("entry position occupied: %d\n",entry);
+                printf("entry position occupied: %d\n",entry);
                 entry += ENTRY_LENGTH;
                 //Entry is occupied, move to the next.
             }else{
-                //printf("entry position available, writing file... entry: %d\n",entry);
+                printf("entry position available, writing file... entry: %d\n",entry);
                 newNode->status = true;
 
                 partition.seekp(entry);
                 partition.write(reinterpret_cast<const char *>(&newNode->status), sizeof(newNode->status));
-                partition.write( file_name.c_str(),50);
+                partition.write( file_name.c_str(),15);
                 partition.write( reinterpret_cast<const char *>(&t), sizeof(t));
                 partition.write( reinterpret_cast<const char *>(&newNode->size), sizeof(newNode->size));
                 partition.write( reinterpret_cast<const char *>(&newNode->first_block), sizeof(newNode->first_block));
-                partition.write( reinterpret_cast<const char *>(&newNode->last_block), sizeof(newNode->last_block));
 
 
                 partition.flush();
-                partition.close();
+
                 break;
             }
 
         }
 
         printf("Number of files: %d\n",i);
-
-
-
-
-
+        partition.close();
 
     }else{
         printf("ERROR: Could not open file.\n");
@@ -263,9 +258,9 @@ void Partition::createFile(string file_name) {
 void Partition::listFiles(string partition_name) {
     bool status;
     INode *newNode = new INode();
-    int entry = FAT_LOCATION;
+    int entry = getBlockPosition(1);
     time_t t;
-    char name[50];
+    char name[15];
     int size;
 
     partition.open(Path, ios::out | ios::in | ios::binary);
@@ -279,7 +274,7 @@ void Partition::listFiles(string partition_name) {
 
             if(status){
 
-                partition.read(name, 50);
+                partition.read(name, 15);
                 partition.read(reinterpret_cast<char *>(&t),sizeof(t)); //FECHA
                 partition.read(reinterpret_cast<char *>(&size),sizeof(size)); //FECHA
 
@@ -312,6 +307,10 @@ void Partition::listFiles(string partition_name) {
         printf("ERROR: Could not open file.\n");
     }
 
+}
+
+int Partition::getBlockPosition(int block) {
+    return block * BLOCK_SIZE;
 }
 
 

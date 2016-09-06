@@ -10,12 +10,13 @@
  * Exist            1
  * */
 
+
+
 class INode {
 public:
-    bool status = 0;
-    char file_name[50];
+    bool status = false;
+    char file_name[15];
     int first_block=0;
-    int last_block=0;
     int size=0;
     long creation_date;
 };

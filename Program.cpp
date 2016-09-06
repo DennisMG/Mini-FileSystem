@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include "Program.h"
+#include "INode.h"
 
 using namespace std;
 
@@ -13,14 +14,15 @@ Program::Program() {
 }
 
 int Program::Run() {
+    printf("iNode size: %d\n",sizeof(INode) );
     cout<<".---------------------Welcome to My File System--------------------."<<endl;
     cout<<"|    What do you want to do?                                       |  "<<endl;
-    cout<<"|1. List Partitions:     list                                      |"<<endl;
+    cout<<"|1. List Partitions:     ls                                        |"<<endl;
     cout<<"|2. Mount Partition:     mount <partition_name>                    |"<<endl;
-    cout<<"|3. Delete Partition:    del <partition_name>                      |"<<endl;
-    cout<<"|4. Create Partition:    create <partition_name> <size_mb> <MB/GB> |"<<endl;
-    cout<<"|5.                                                                |"<<endl;
-
+    cout<<"|3. Unmount Partition:   unmount                                   |"<<endl;
+    cout<<"|4. Delete Partition:    del <partition_name>                      |"<<endl;
+    cout<<"|5. Create Partition:    create <partition_name> <size_mb> <MB/GB> |"<<endl;
+    cout<<"|                                                                  |"<<endl;
     cout<<".__________________________________________________________________."<<endl<<endl;
 
     while(!terminate){
@@ -48,6 +50,8 @@ CLI Program::getCommand(string command) {
         token = EXIT;
     }else if(tokens[0] == "format"){
         token = FORMAT;
+    }else if(tokens[0] == "clear"){
+        token = CLEAR;
     }else{
         token = INVALID;
     }
@@ -68,6 +72,9 @@ void Program::executeCommand(string command) {
             break;
         case DEL:
             printf("Deleting partition...\n");
+            break;
+        case CLEAR:
+
             break;
         case CREATE: {
             printf("Creating partition...\n");

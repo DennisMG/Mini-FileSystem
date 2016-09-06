@@ -12,7 +12,7 @@
 #include <vector>
 
 #define MAX_NAME_SIZE_BYTES 50
-
+#define BLOCK_SIZE 4096
 using namespace std;
 
 
@@ -22,7 +22,6 @@ class Partition {
 
 public:
     Partition();
-
     void createPartition(string name, string size_byte, string unit);
     void deletePartition(string name);
     void listPartitions();
@@ -34,11 +33,10 @@ public:
     void partitionManager();
 
 private:
-    const int FAT_LOCATION = 74;
-    const int BLOCK_SIZE = 4096;
-    const int MAX_FAT_ENTRIES = 512;
-    const int ENTRY_LENGTH = 71;
-
+    const int FAT_LOCATION = 4096;
+    const int MAX_FAT_ENTRIES = 128;
+    const int ENTRY_LENGTH = 32;
+    int getBlockPosition(int block);
     string Name, Path;
     int partition_size_bytes;
     bool Mounted;
