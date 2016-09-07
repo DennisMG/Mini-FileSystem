@@ -12,6 +12,7 @@
 #include <vector>
 #include "INode.h"
 #include "bitmap.h"
+#include "SuperBlock.h"
 
 #define MAX_NAME_SIZE_BYTES 50
 #define BLOCK_SIZE 4096
@@ -24,6 +25,7 @@ class Partition {
 
 public:
     Partition();
+    SuperBlock _superBlock;
     void createPartition(string name, string size_byte, string unit);
     void deletePartition(string name);
     void listPartitions();
@@ -35,6 +37,7 @@ public:
     void partitionManager();
 
 private:
+
     const int FAT_LOCATION = 4096;
     const int MAX_FAT_ENTRIES = 128;
     const int ENTRY_LENGTH = 32;
@@ -50,9 +53,8 @@ private:
     void runCommand(string command);
 
     int getCommandID(string command);
-    void writeMasterBlock(string partitionName, int _FAT_pointer, int bitmap_pointer, int data_pointer,
-                          int total_of_blocks, long creation_date);
-    void readMasterBlock();
+    void writeSuperBlock(SuperBlock superBlock);
+    void readSuperBlock();
     void split(const string &s, char delim, vector<string> &elems);
     vector<string> split(const string &s, char delim);
 

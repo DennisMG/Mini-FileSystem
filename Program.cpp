@@ -5,6 +5,7 @@
 #include <sstream>
 #include "Program.h"
 #include "INode.h"
+#include "SuperBlock.h"
 
 using namespace std;
 
@@ -15,7 +16,7 @@ Program::Program() {
 
 int Program::Run() {
     INode FAT[128];
-    printf("iNode size: %d\n",sizeof(FAT) );
+    printf("Superbloc size: %d\n",sizeof(SuperBlock) );
     cout<<".---------------------Welcome to My File System--------------------."<<endl;
     cout<<"|    What do you want to do?                                       |  "<<endl;
     cout<<"|1. List Partitions:     ls                                        |"<<endl;

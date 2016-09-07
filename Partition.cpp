@@ -5,6 +5,7 @@
 #include <sstream>
 #include "Partition.h"
 #include "INode.h"
+#include "SuperBlock.h"
 
 
 Partition::Partition() {
@@ -41,20 +42,24 @@ void Partition::deletePartition(string name) {
 }
 
 void Partition::formatPartition(string partition_name, int size_in_kb){
+    string _partition_name = partition_name + ".fs";
+    _partition_name.resize(16,' ');
 
-    int _FAT_pointer= 1 * BLOCK_SIZE;
-    int bitmap_pointer = 2 * BLOCK_SIZE;
-    int data_pointer = 1;
+    SuperBlock superBlock;
+
+    strcpy(superBlock.Name, _partition_name.c_str());
+    superBlock.size = size_in_kb*1024;
+    superBlock.CreationDate = time(0);
+    superBlock.block_number = size_in_kb/4;
+
     int total_blocks = size_in_kb/4;  /* size in kb/block size in kb (4Kb) */
-    printf("number of blocks: %d\n",total_blocks);
 
-    partition_name.resize(50,' ');
-    time_t t = time(0);
 
-    writeMasterBlock(partition_name,_FAT_pointer,bitmap_pointer,data_pointer,total_blocks,t);
+
+    writeSuperBlock(superBlock);
     writeFAT();
     writeNewBitmap(total_blocks/8);
-   // partition.close();
+
     printf("Successfully formated.\n");
 }
 
@@ -75,6 +80,7 @@ void Partition::mountPartition(string partition_name) {
         Path = Name + ".fs";
         printf("Partition mounted...\n");
         Mounted = true;
+        readSuperBlock();
         partitionManager();
     }else{
         printf("ERROR: Unable to mount partition.\n");
@@ -169,19 +175,16 @@ void Partition::split(const string &s, char delim, vector<string> &elems) {
     }
 }
 
-void Partition::writeMasterBlock(string partitionName, int _FAT_pointer, int bitmap_pointer, int data_pointer,
-                                 int total_of_blocks, long creation_date) {
-    string _partition_name = partitionName + ".fs";
+void Partition::writeSuperBlock(SuperBlock superBlock) {
+
+
+
+
     partition.open(Path, ios::out | ios::in | ios::binary);
 
     if(partition.is_open()){
-        partition.seekg (0, ios::beg);
-        partition.write( _partition_name.c_str(),50);
-        partition.write(reinterpret_cast<const char *>(&creation_date), sizeof(creation_date));
-        partition.write(reinterpret_cast<const char *>(&_FAT_pointer), sizeof(_FAT_pointer));
-        partition.write(reinterpret_cast<const char *>(&bitmap_pointer), sizeof(bitmap_pointer));
-        partition.write(reinterpret_cast<const char *>(&data_pointer), sizeof(data_pointer));
-        partition.write(reinterpret_cast<const char *>(&total_of_blocks), sizeof(total_of_blocks));
+        partition.seekp (0, ios::beg);
+        partition.write(reinterpret_cast<const char *>(&superBlock), BLOCK_SIZE);
         partition.close();
     }else{
         printf("ERROR: Could not write master block\n");
@@ -191,8 +194,19 @@ void Partition::writeMasterBlock(string partitionName, int _FAT_pointer, int bit
 
 }
 
-void Partition::readMasterBlock() {
 
+void Partition::readSuperBlock() {
+    partition.open(Path, ios::out | ios::in | ios::binary);
+
+    if(partition.is_open()){
+        partition.seekg(0, ios::beg);
+        partition.read(reinterpret_cast<char *>(&_superBlock), BLOCK_SIZE);
+        partition.close();
+
+        printf("name: %s, Size: %d, block number: %d\n", _superBlock.Name,  _superBlock.size,_superBlock.block_number);
+    }else{
+        printf("ERROR: Could not write master block\n");
+    }
 }
 
 void Partition::writeFAT() {
@@ -367,7 +381,7 @@ void Partition::readBitmap() {
     int blockOffset = getBlockPosition(2);
 
     partition.open(Path, ios::out | ios::in | ios::binary);
-    if(partition.is_open()){
+    if( partition.is_open() ){
         partition.seekg(blockOffset);
         partition.read(reinterpret_cast<char *>(&Bitmap), BLOCK_SIZE);
         for(int i = 0 ; i < sizeof(FAT) / sizeof(INode) ; i++){
@@ -387,11 +401,11 @@ void Partition::writeNewBitmap(int bitmap_size_bytes) {
     int blockOffset = getBlockPosition(2);
     //Bitmap.resize(bitmap_size_bytes, 0);
     Bitmap = new byte[bitmap_size_bytes];
-    for(int i =0 ; i<bitmap_size_bytes;i++){
+    for(int i = 0 ; i < bitmap_size_bytes; i++){
         Bitmap[i] = '\0';
     }
     bitmapSet( &Bitmap[0], 0);
-    bitmapSet(&Bitmap[0], 1);
+    bitmapSet( &Bitmap[0], 1);
 
     if (bitmap_size_bytes <= 4096){
         bitmapSet(&Bitmap[0], 2);
@@ -426,7 +440,7 @@ void Partition::writeNewBitmap(int bitmap_size_bytes) {
 
     if(partition.is_open()){
         partition.seekp(blockOffset);
-        partition.write( reinterpret_cast<const char *>(&Bitmap),sizeof(Bitmap));
+        partition.write( reinterpret_cast<const char *>(&Bitmap),bitmap_size_bytes*sizeof(byte));
 
     }
     partition.close();
