@@ -44,7 +44,7 @@ private:
     bool Mounted;
     fstream partition;
     INode FAT[128];
-    vector<byte> Bitmap;
+    byte * Bitmap;
 
 
     void runCommand(string command);
