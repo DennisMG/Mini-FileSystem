@@ -59,7 +59,6 @@ void Partition::formatPartition(string partition_name, int size_in_kb){
     writeSuperBlock(superBlock);
     writeFAT();
     writeNewBitmap(total_blocks/8);
-
     printf("Successfully formated.\n");
 }
 
@@ -81,6 +80,7 @@ void Partition::mountPartition(string partition_name) {
         printf("Partition mounted...\n");
         Mounted = true;
         readSuperBlock();
+        readBitmap();
         partitionManager();
     }else{
         printf("ERROR: Unable to mount partition.\n");
@@ -200,10 +200,12 @@ void Partition::readSuperBlock() {
 
     if(partition.is_open()){
         partition.seekg(0, ios::beg);
-        partition.read(reinterpret_cast<char *>(&_superBlock), BLOCK_SIZE);
-        partition.close();
+        partition.read(reinterpret_cast<char *>(&_superBlock), sizeof(SuperBlock));
 
-        printf("name: %s, Size: %d, block number: %d\n", _superBlock.Name,  _superBlock.size,_superBlock.block_number);
+
+        partition.close();
+        //_superBlock.Name.resize(16,'');
+        printf("name: %s, Size: %d, block number: %d\n", string(_superBlock.Name).c_str(),  _superBlock.size,_superBlock.block_number);
     }else{
         printf("ERROR: Could not write master block\n");
     }
@@ -379,15 +381,17 @@ int Partition::getBlockPosition(int block) {
 
 void Partition::readBitmap() {
     int blockOffset = getBlockPosition(2);
-
+    Bitmap = new byte[_superBlock.block_number/8];
     partition.open(Path, ios::out | ios::in | ios::binary);
     if( partition.is_open() ){
         partition.seekg(blockOffset);
-        partition.read(reinterpret_cast<char *>(&Bitmap), BLOCK_SIZE);
-        for(int i = 0 ; i < sizeof(FAT) / sizeof(INode) ; i++){
-
-            }
-        }
+        partition.read(reinterpret_cast<char *>(&Bitmap),_superBlock.block_number/8 );
+//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 0));
+//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 1));
+//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 2));
+//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 3));
+        partition.close();
+    }
 
 }
 
