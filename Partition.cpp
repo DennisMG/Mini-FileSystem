@@ -382,14 +382,19 @@ int Partition::getBlockPosition(int block) {
 void Partition::readBitmap() {
     int blockOffset = getBlockPosition(2);
     Bitmap = new byte[_superBlock.block_number/8];
+    int i;
+    for(i = 0 ; i < _superBlock.block_number/8; i++){
+        Bitmap[i] = 0;
+    }
+    Bitmap[i] = '\0';
     partition.open(Path, ios::out | ios::in | ios::binary);
     if( partition.is_open() ){
         partition.seekg(blockOffset);
-        partition.read(reinterpret_cast<char *>(&Bitmap),_superBlock.block_number/8 );
-//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 0));
-//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 1));
-//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 2));
-//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 3));
+        partition.read(reinterpret_cast<char *>(Bitmap), _superBlock.block_number/8 );
+        printf("bool: %d\n",bitmapGet(&Bitmap[0], 0));
+        printf("bool: %d\n",bitmapGet(&Bitmap[0], 1));
+        printf("bool: %d\n",bitmapGet(&Bitmap[0], 2));
+        printf("bool: %d\n",bitmapGet(&Bitmap[0], 3));
         partition.close();
     }
 
@@ -405,18 +410,20 @@ void Partition::writeNewBitmap(int bitmap_size_bytes) {
     int blockOffset = getBlockPosition(2);
     //Bitmap.resize(bitmap_size_bytes, 0);
     Bitmap = new byte[bitmap_size_bytes];
-    for(int i = 0 ; i < bitmap_size_bytes; i++){
-        Bitmap[i] = '\0';
+    int i;
+    for(i = 0 ; i < bitmap_size_bytes; i++){
+        Bitmap[i] = 0;
     }
+    Bitmap[i] = '\0';
     bitmapSet( &Bitmap[0], 0);
     bitmapSet( &Bitmap[0], 1);
 
     if (bitmap_size_bytes <= 4096){
         bitmapSet(&Bitmap[0], 2);
-//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 0));
-//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 1));
-//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 2));
-//        printf("bool: %d\n",bitmapGet(&Bitmap[0], 3));
+        printf("bool: %d\n",bitmapGet(&Bitmap[0], 0));
+        printf("bool: %d\n",bitmapGet(&Bitmap[0], 1));
+        printf("bool: %d\n",bitmapGet(&Bitmap[0], 2));
+        printf("bool: %d\n",bitmapGet(&Bitmap[0], 3));
     }else{ //8192
         int word = 0;
         int busy_blocks = bitmap_size_bytes/BLOCK_SIZE;//0
@@ -444,7 +451,7 @@ void Partition::writeNewBitmap(int bitmap_size_bytes) {
 
     if(partition.is_open()){
         partition.seekp(blockOffset);
-        partition.write( reinterpret_cast<const char *>(&Bitmap),bitmap_size_bytes*sizeof(byte));
+        partition.write(reinterpret_cast<char*>(Bitmap),bitmap_size_bytes*sizeof(byte));
 
     }
     partition.close();
