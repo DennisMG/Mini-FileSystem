@@ -13,7 +13,7 @@
 #include "INode.h"
 #include "bitmap.h"
 #include "SuperBlock.h"
-
+#include "FreeBlockBitMap.h"
 #define MAX_NAME_SIZE_BYTES 50
 #define BLOCK_SIZE 4096
 using namespace std;
@@ -48,7 +48,7 @@ private:
     fstream partition;
     INode FAT[128];
     byte * Bitmap;
-
+    FreeBlockBitMap * freeBlocks;
 
     void runCommand(string command);
 
@@ -74,6 +74,10 @@ private:
     void writeBitmap();
 
     void writeNewBitmap(int bitmap_size_bytes);
+
+    void copy_from_fs(string source, string destination);
+    void copy_to_fs(string source, string destination);
+
 };
 
 

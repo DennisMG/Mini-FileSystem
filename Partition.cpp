@@ -6,10 +6,10 @@
 #include "Partition.h"
 #include "INode.h"
 #include "SuperBlock.h"
-
+#include "FreeBlockBitMap.h"
 
 Partition::Partition() {
-
+    freeBlocks = new FreeBlockBitMap();
 }
 
 void Partition::listPartitions() {
@@ -32,7 +32,7 @@ void Partition::createPartition(string name, string size_byte, string unit) {
     system(command.c_str());
     printf("Partition created successfully\n");
 
-    formatPartition(name,partition_size_kb);
+    formatPartition(name, partition_size_kb);
 
 
 }
@@ -391,11 +391,8 @@ void Partition::readBitmap() {
     if( partition.is_open() ){
         partition.seekg(blockOffset);
         partition.read(reinterpret_cast<char *>(Bitmap), _superBlock.block_number/8 );
-        printf("bool: %d\n",bitmapGet(&Bitmap[0], 0));
-        printf("bool: %d\n",bitmapGet(&Bitmap[0], 1));
-        printf("bool: %d\n",bitmapGet(&Bitmap[0], 2));
-        printf("bool: %d\n",bitmapGet(&Bitmap[0], 3));
         partition.close();
+        freeBlocks->initializeBitmap(Bitmap, _superBlock.block_number/8);
     }
 
 }
@@ -408,7 +405,6 @@ void Partition::writeNewBitmap(int bitmap_size_bytes) {
     printf("number of bytes: %d\n", bitmap_size_bytes);
 
     int blockOffset = getBlockPosition(2);
-    //Bitmap.resize(bitmap_size_bytes, 0);
     Bitmap = new byte[bitmap_size_bytes];
     int i;
     for(i = 0 ; i < bitmap_size_bytes; i++){
@@ -420,10 +416,7 @@ void Partition::writeNewBitmap(int bitmap_size_bytes) {
 
     if (bitmap_size_bytes <= 4096){
         bitmapSet(&Bitmap[0], 2);
-        printf("bool: %d\n",bitmapGet(&Bitmap[0], 0));
-        printf("bool: %d\n",bitmapGet(&Bitmap[0], 1));
-        printf("bool: %d\n",bitmapGet(&Bitmap[0], 2));
-        printf("bool: %d\n",bitmapGet(&Bitmap[0], 3));
+
     }else{ //8192
         int word = 0;
         int busy_blocks = bitmap_size_bytes/BLOCK_SIZE;//0
@@ -455,6 +448,40 @@ void Partition::writeNewBitmap(int bitmap_size_bytes) {
 
     }
     partition.close();
+
+}
+
+void Partition::copy_from_fs(string source, string destination) {
+    fstream SourceFile(source,ios::out | ios::binary );
+    fstream DestinationFile(destination, ios::in | ios::binary);
+
+    if(!SourceFile.good()){
+        printf("Source doesnt exist");
+        return;
+    }
+
+    if(!DestinationFile.good()){
+        printf("Destination file doesnt exist");
+        return;
+    }
+}
+
+void Partition::copy_to_fs(string source, string destination) {
+    fstream SourceFile(source,ios::out | ios::binary );
+    fstream DestinationFile(destination, ios::in | ios::binary);
+
+    if(!SourceFile.good()){
+        printf("Source doesnt exist");
+        return;
+    }
+
+    if(!DestinationFile.good()){
+        printf("Destination file doesnt exist");
+        return;
+    }
+
+
+
 
 }
 

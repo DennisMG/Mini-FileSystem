@@ -16,8 +16,9 @@ using namespace std;
 class FreeBlockBitMap {
 public:
     FreeBlockBitMap();
-    vector<byte> Bitmap;
-
+    byte * Bitmap;
+    int size_in_bytes;
+    void initializeBitmap(byte *bitmap, int size_in_bytes);
 };
 
 
