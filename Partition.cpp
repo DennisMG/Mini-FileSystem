@@ -133,6 +133,10 @@ void Partition::runCommand(string command) {
             listFilesV2(Path);
             printf("\n\n");
             break;
+        case 6:
+            copy_to_fs(tokens[1], tokens[2]);
+            printf("\n\n");
+            break;
         default:
             printf("Command not recognized.\n");
     }
@@ -152,6 +156,8 @@ int Partition::getCommandID(string command) {
         command_id = 4;
     }else if(tokens[0].compare("ls") == 0){
         command_id = 5;
+    }else if(tokens[0].compare("copy_to_fs") == 0){
+        command_id = 6;
     }else{
         command_id = -1;
     }
@@ -467,15 +473,17 @@ void Partition::copy_from_fs(string source, string destination) {
 }
 
 void Partition::copy_to_fs(string source, string destination) {
-    fstream SourceFile(source,ios::out | ios::binary );
-    fstream DestinationFile(destination, ios::in | ios::binary);
+    fstream SourceFile(source,ios::out | ios::in | ios::binary );
+    fstream DestinationFile(destination, ios::out | ios::in | ios::binary);
 
     if(!SourceFile.good()){
+        DestinationFile.close();
         printf("Source doesnt exist");
         return;
     }
 
     if(!DestinationFile.good()){
+        SourceFile.close();
         printf("Destination file doesnt exist");
         return;
     }
