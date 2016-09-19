@@ -134,6 +134,10 @@ void Partition::runCommand(string command) {
             printf("\n\n");
             break;
         case 6:
+            copy_from_fs(tokens[1], tokens[2]);
+            printf("\n\n");
+            break;
+        case 7:
             copy_to_fs(tokens[1], tokens[2]);
             printf("\n\n");
             break;
@@ -156,8 +160,10 @@ int Partition::getCommandID(string command) {
         command_id = 4;
     }else if(tokens[0].compare("ls") == 0){
         command_id = 5;
-    }else if(tokens[0].compare("copy_to_fs") == 0){
+    }else if(tokens[0].compare("copy_from_fs") == 0){
         command_id = 6;
+    }else if(tokens[0].compare("copy_to_fs") == 0){
+        command_id = 7;
     }else{
         command_id = -1;
     }
@@ -458,22 +464,33 @@ void Partition::writeNewBitmap(int bitmap_size_bytes) {
 }
 
 void Partition::copy_from_fs(string source, string destination) {
-    fstream SourceFile(source,ios::out | ios::binary );
-    fstream DestinationFile(destination, ios::in | ios::binary);
+    fstream SourceFile(source,ios::out | ios::in | ios::binary );
+    fstream DestinationFile(destination, ios::out | ios::in | ios::binary);
 
     if(!SourceFile.good()){
+        DestinationFile.close();
         printf("Source doesnt exist");
         return;
     }
 
     if(!DestinationFile.good()){
+        SourceFile.close();
         printf("Destination file doesnt exist");
         return;
     }
+
+
+    SourceFile.seekg (0, SourceFile.end);
+    int length = SourceFile.tellg();
+    SourceFile.seekg (0, SourceFile.beg);
+    int blocksNeeded = getBlocksNeeded(length);
+    printf("source size: %d\n", blocksNeeded);
+
+
 }
 
 void Partition::copy_to_fs(string source, string destination) {
-    fstream SourceFile(source,ios::out | ios::in | ios::binary );
+    fstream SourceFile(source, ios::out | ios::in | ios::binary );
     fstream DestinationFile(destination, ios::out | ios::in | ios::binary);
 
     if(!SourceFile.good()){
@@ -491,6 +508,10 @@ void Partition::copy_to_fs(string source, string destination) {
 
 
 
+}
+
+int Partition::getBlocksNeeded(int bytes) {
+    return bytes/BLOCK_SIZE;
 }
 
 

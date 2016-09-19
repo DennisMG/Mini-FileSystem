@@ -56,6 +56,7 @@ private:
     void writeSuperBlock(SuperBlock superBlock);
     void readSuperBlock();
     void split(const string &s, char delim, vector<string> &elems);
+    int getBlocksNeeded(int bytes);
     vector<string> split(const string &s, char delim);
 
 
