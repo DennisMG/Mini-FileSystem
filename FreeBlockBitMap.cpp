@@ -3,6 +3,7 @@
 //
 
 #include "FreeBlockBitMap.h"
+#include <vector>
 
 FreeBlockBitMap::FreeBlockBitMap() {
 
@@ -11,20 +12,53 @@ FreeBlockBitMap::FreeBlockBitMap() {
 void FreeBlockBitMap::initializeBitmap(byte *bitmap, int size_in_bytes) {
     Bitmap = bitmap;
     this->size_in_bytes = size_in_bytes;
-    printf("bbool: %d\n",bitmapGet(Bitmap, 0));
-    printf("bbool: %d\n",bitmapGet(Bitmap, 1));
-    printf("bbool: %d\n",bitmapGet(Bitmap, 2));
-    printf("bbool: %d\n",bitmapGet(Bitmap, 3));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 0));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 1));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 2));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 3));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 4));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 5));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 6));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 7));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 8));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 9));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 10));
+
 }
 
-int FreeBlockBitMap::getAvailableBlocks(int blocksNeeded) {
-    //int blocks[blocksNeeded] = {0};
-    int byte = bitmapSearch(Bitmap,0,size_in_bytes,0);
-    printf("available in pos: %d,\n",byte);
-    bitmapSet(Bitmap,byte);
-    byte = bitmapSearch(Bitmap,0,size_in_bytes,0);
-    printf("available in pos: %d,\n",byte);
-//    for(int i = 0 ; i<size_in_bytes ; i++){
-//        if()
-//    }
+vector<int> FreeBlockBitMap::getAvailableBlocks(int blocksNeeded) {
+    vector<int> blocks;
+    vector<int> empty;
+    int i;
+    printf("size_in_bytes %d \n",size_in_bytes);
+
+
+    int start = 0;
+    for(i = 0 ; i<blocksNeeded ; i++){
+        int available = bitmapSearch(Bitmap,0,size_in_bytes,start);
+        start = available;
+        if(available == BITMAP_NOTFOUND){
+            printf("1ERROR: No space available. Blocks needed %d and blocks found %d\n",blocksNeeded,blocks.size());
+            return empty;
+        }
+
+        //bitmapSet(Bitmap,available);
+        blocks.push_back(available);
+
+    }
+    if(size_in_bytes<blocksNeeded*8){
+        printf("2ERROR: No space available. Blocks needed %d and blocks found %d\n",blocksNeeded,blocks.size());
+        return empty;
+    }
+
+    return blocks;
+
 }
+
+void FreeBlockBitMap::fillBitmap(vector<int> blocksToFill) {
+    for(int i = 0 ; i<blocksToFill.size() ; i++){
+        bitmapSet(Bitmap,blocksToFill[i]);
+    }
+}
+
+

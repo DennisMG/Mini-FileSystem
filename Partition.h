@@ -75,10 +75,11 @@ private:
     void writeBitmap();
 
     void writeNewBitmap(int bitmap_size_bytes);
+    void writeNewBitmapV2(int bitmap_size_bytes);
 
     void copy_from_fs(string source, string destination);
     void copy_to_fs(string source, string destination);
-    int * getEmptyBlocks(int blocksNeeded);
+    vector<int> getEmptyBlocks(int blocksNeeded);
 };
 
 

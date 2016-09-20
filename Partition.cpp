@@ -7,6 +7,7 @@
 #include "INode.h"
 #include "SuperBlock.h"
 #include "FreeBlockBitMap.h"
+#include "Block.h"
 
 Partition::Partition() {
     freeBlocks = new FreeBlockBitMap();
@@ -58,7 +59,7 @@ void Partition::formatPartition(string partition_name, int size_in_kb){
 
     writeSuperBlock(superBlock);
     writeFAT();
-    writeNewBitmap(total_blocks/8);
+    writeNewBitmapV2(total_blocks/8);
     printf("Successfully formated.\n");
 }
 
@@ -413,6 +414,8 @@ void Partition::writeBitmap() {
 
 }
 
+
+
 void Partition::writeNewBitmap(int bitmap_size_bytes) {
     printf("number of bytes: %d\n", bitmap_size_bytes);
 
@@ -487,7 +490,8 @@ void Partition::copy_from_fs(string source, string destination) {
     //get blocks needed to save the file
     int blocksNeeded = getBlocksNeeded(length);
     printf("source size: %d\n", blocksNeeded);
-    getEmptyBlocks(blocksNeeded);
+    vector<int> emptyBlocks = getEmptyBlocks(blocksNeeded);
+    printf("size of BLOCK: %d\n", sizeof(Block));
     //int emptyblocks[] = getEmptyBlocks(blocksNeeded);
 
 
@@ -520,11 +524,63 @@ int Partition::getBlocksNeeded(int bytes) {
     return bytes/BLOCK_SIZE;
 }
 
-int * Partition::getEmptyBlocks(int blocksNeeded) {
-    int b = freeBlocks->getAvailableBlocks(blocksNeeded);
 
-    return 0;
+vector<int> Partition::getEmptyBlocks(int blocksNeeded) {
+    //int emptyBlocksArray[blocksNeeded]={0};
+    vector<int> b = freeBlocks->getAvailableBlocks(blocksNeeded);
 
+//    for(int i = 0; i< blocksNeeded ; i++){
+        printf("vector size: %d\n",b.size());
+//    }
+
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 10));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 11));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 12));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 13));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 14));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 15));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 16));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 17));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 18));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 19));
+//    printf("bbool: %d\n",bitmapGet(Bitmap, 20));
+    return b;
+
+}
+
+void Partition::writeNewBitmapV2(int bitmap_size_bytes) {
+    printf("number of bytes: %d\n", bitmap_size_bytes);
+
+
+    Bitmap = new byte[bitmap_size_bytes];
+    int i;
+    for(i = 0 ; i < bitmap_size_bytes; i++){
+        Bitmap[i] = 0;
+    }
+    Bitmap[i] = '\0';
+    bitmapSet( Bitmap, 0);
+    bitmapSet( Bitmap, 1);
+
+    if (bitmap_size_bytes <= 4096){
+        bitmapSet(Bitmap, 2);
+
+    }else{
+        int number_of_blocks = bitmap_size_bytes/BLOCK_SIZE;
+
+        for(int i = 0 ; i< number_of_blocks; i++){
+            bitmapSet(Bitmap, i+2);
+        }
+    }
+
+    partition.open(Path, ios::out | ios::in | ios::binary);
+
+    if(partition.is_open()){
+        int blockOffset = getBlockPosition(2);
+        partition.seekp(blockOffset);
+        partition.write(reinterpret_cast<char*>(Bitmap),bitmap_size_bytes*sizeof(byte));
+
+    }
+    partition.close();
 }
 
 

@@ -7,7 +7,9 @@
 
 
 class Block {
-
+public:
+    int pointer;
+    char buffer[4092];
 };
 
 
