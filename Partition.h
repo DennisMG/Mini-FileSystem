@@ -78,7 +78,7 @@ private:
 
     void copy_from_fs(string source, string destination);
     void copy_to_fs(string source, string destination);
-
+    int * getEmptyBlocks(int blocksNeeded);
 };
 
 

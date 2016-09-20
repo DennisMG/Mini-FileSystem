@@ -19,6 +19,8 @@ public:
     byte * Bitmap;
     int size_in_bytes;
     void initializeBitmap(byte *bitmap, int size_in_bytes);
+
+    int getAvailableBlocks(int blocksNeeded);
 };
 
 

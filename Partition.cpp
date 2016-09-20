@@ -467,11 +467,11 @@ void Partition::copy_from_fs(string source, string destination) {
     fstream SourceFile(source,ios::out | ios::in | ios::binary );
     fstream DestinationFile(destination, ios::out | ios::in | ios::binary);
 
-    if(!SourceFile.good()){
-        DestinationFile.close();
-        printf("Source doesnt exist");
-        return;
-    }
+//    if(!SourceFile.good()){
+//        DestinationFile.close();
+//        printf("Source doesnt exist");
+//        return;
+//    }
 
     if(!DestinationFile.good()){
         SourceFile.close();
@@ -479,12 +479,16 @@ void Partition::copy_from_fs(string source, string destination) {
         return;
     }
 
-
+    //get file size
     SourceFile.seekg (0, SourceFile.end);
     int length = SourceFile.tellg();
     SourceFile.seekg (0, SourceFile.beg);
+
+    //get blocks needed to save the file
     int blocksNeeded = getBlocksNeeded(length);
     printf("source size: %d\n", blocksNeeded);
+    getEmptyBlocks(blocksNeeded);
+    //int emptyblocks[] = getEmptyBlocks(blocksNeeded);
 
 
 }
@@ -508,10 +512,19 @@ void Partition::copy_to_fs(string source, string destination) {
 
 
 
+
+
 }
 
 int Partition::getBlocksNeeded(int bytes) {
     return bytes/BLOCK_SIZE;
+}
+
+int * Partition::getEmptyBlocks(int blocksNeeded) {
+    int b = freeBlocks->getAvailableBlocks(blocksNeeded);
+
+    return 0;
+
 }
 
 
