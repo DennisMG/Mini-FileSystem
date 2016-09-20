@@ -62,11 +62,7 @@ private:
 
     void writeFAT();
 
-    void createFile(string file_name);
-
-    void listFiles(string partition_name);
-
-    void createFileV2(string file_name);
+    void createFileV2(string file_name, int size, int pointer_to_first_block);
 
     void listFilesV2(string partition_name);
 

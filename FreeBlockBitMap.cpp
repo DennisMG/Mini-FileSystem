@@ -3,6 +3,7 @@
 //
 
 #include "FreeBlockBitMap.h"
+#include "Partition.h"
 #include <vector>
 
 FreeBlockBitMap::FreeBlockBitMap() {
@@ -46,8 +47,9 @@ vector<int> FreeBlockBitMap::getAvailableBlocks(int blocksNeeded) {
         blocks.push_back(available);
 
     }
-    if(size_in_bytes<blocksNeeded*8){
-        printf("2ERROR: No space available. Blocks needed %d and blocks found %d\n",blocksNeeded,blocks.size());
+    printf("Space needed %d and space found %d\n",blocksNeeded*BLOCK_SIZE,size_in_bytes*8*BLOCK_SIZE);
+    if(size_in_bytes*8*BLOCK_SIZE<blocksNeeded*BLOCK_SIZE){
+        printf("2ERROR: No space available. Space needed %d and space found %d\n",blocksNeeded*BLOCK_SIZE,size_in_bytes*8*BLOCK_SIZE);
         return empty;
     }
 
