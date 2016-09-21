@@ -39,15 +39,16 @@ vector<int> FreeBlockBitMap::getAvailableBlocks(int blocksNeeded) {
         int available = bitmapSearch(Bitmap,0,size_in_bytes,start);
         start = available;
         if(available == BITMAP_NOTFOUND){
-            printf("1ERROR: No space available. Blocks needed %d and blocks found %d\n",blocksNeeded,blocks.size());
+            printf("1ERROR: No space available. Blocks needed %d bytes and available space found %d\n",blocksNeeded*4096,blocks.size()*BLOCK_SIZE);
             return empty;
         }
 
         //bitmapSet(Bitmap,available);
-        blocks.push_back(available);
+        if(!(available<= 0))
+            blocks.push_back(available);
 
     }
-    printf("Space needed %d and space found %d\n",blocksNeeded*BLOCK_SIZE,size_in_bytes*8*BLOCK_SIZE);
+    printf("Space needed %d and space found %d\n",blocksNeeded*4096,blocks.size()*BLOCK_SIZE);
     if(size_in_bytes*8*BLOCK_SIZE<blocksNeeded*BLOCK_SIZE){
         printf("2ERROR: No space available. Space needed %d and space found %d\n",blocksNeeded*BLOCK_SIZE,size_in_bytes*8*BLOCK_SIZE);
         return empty;

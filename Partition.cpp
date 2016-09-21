@@ -81,6 +81,7 @@ void Partition::mountPartition(string partition_name) {
         printf("Partition mounted...\n");
         Mounted = true;
         readSuperBlock();
+        readFat();
         readBitmap();
         partitionManager();
     }else{
@@ -127,19 +128,34 @@ void Partition::runCommand(string command) {
             printf("Finished unmounting.\n");
             break;
         case 4:
-            createFileV2(tokens[1], 0, 0);
-            printf("File created!!\n");
+            if(createFileV2(tokens[1], 0, 0)){
+                printf("File created!!\n");
+            }else{
+                printf("Error creating file\n");
+            }
             break;
         case 5:
             listFilesV2(Path);
             printf("\n\n");
             break;
         case 6:
-            copy_from_fs(tokens[1], tokens[2]);
+            copy_from_fs(tokens[1],"");
             printf("\n\n");
             break;
         case 7:
-            copy_to_fs(tokens[1], tokens[2]);
+            if(copy_to_fs(tokens[1], tokens[2])){
+                printf("Copy Successful\n");
+            }else{
+                printf("Error Copying file\n");
+            }
+            printf("\n\n");
+            break;
+        case 8:
+            rename_file(tokens[1], tokens[2]);
+            printf("\n\n");
+            break;
+        case 9:
+            delete_file(tokens[1]);
             printf("\n\n");
             break;
         default:
@@ -157,7 +173,7 @@ int Partition::getCommandID(string command) {
         command_id = 2;
     }else if(tokens[0].compare("format") == 0){
         command_id = 3;
-    }else if(tokens[0].compare("touch") == 0){
+    }else if(tokens[0].compare("empty") == 0){
         command_id = 4;
     }else if(tokens[0].compare("ls") == 0){
         command_id = 5;
@@ -165,6 +181,10 @@ int Partition::getCommandID(string command) {
         command_id = 6;
     }else if(tokens[0].compare("copy_to_fs") == 0){
         command_id = 7;
+    }else if(tokens[0].compare("rename") == 0){
+        command_id = 8;
+    }else if(tokens[0].compare("delete") == 0){
+        command_id = 9;
     }else{
         command_id = -1;
     }
@@ -238,7 +258,9 @@ void Partition::writeFAT() {
 
 }
 
-void Partition::createFileV2(string file_name, int size, int pointer_to_first_block) {
+
+
+bool Partition::createFileV2(string file_name, int size, int pointer_to_first_block) {
     INode newNode;
     int entry = getBlockPosition(1);
 //    newNode.creation_date = time(0);
@@ -250,10 +272,28 @@ void Partition::createFileV2(string file_name, int size, int pointer_to_first_bl
     if(partition.is_open()){
         partition.seekg(entry);
         partition.read(reinterpret_cast<char *>(&FAT), BLOCK_SIZE);
+
+        vector<string> tokens = split(file_name,'/');
+        string realName = tokens.at(tokens.size()-1);
+
+        if(fileExist(FAT, realName).status){
+            printf("Possible duplicate. There's a file with the same name\n");
+            return false;
+        }
+
         for(int i = 0 ; i < sizeof(FAT)/sizeof(INode) ; i++){
-            if(FAT[i].status == 0){
+
+            if(FAT[i].status == 0 ){
+
+
                 FAT[i].status = 1;
-                strcpy(FAT[i].file_name,file_name.c_str());
+                vector<string> tokens = split(file_name,'/');
+                string realName = tokens.at(tokens.size()-1);
+                if(strlen(realName.c_str()) > 15)
+                    realName.resize(14,' ');
+                printf("realName: %s\n",realName.c_str());
+                printf("length: %zu\n",strlen(realName.c_str()));
+                strcpy(FAT[i].file_name,realName.c_str());
                 FAT[i].creation_date = time(0);
                 FAT[i].first_block = pointer_to_first_block;
                 FAT[i].size = size;
@@ -265,6 +305,7 @@ void Partition::createFileV2(string file_name, int size, int pointer_to_first_bl
     }
 
     partition.close();
+    return true;
 
 }
 
@@ -313,9 +354,7 @@ void Partition::readBitmap() {
 
 }
 
-void Partition::writeBitmap() {
 
-}
 
 
 
@@ -373,7 +412,7 @@ void Partition::copy_from_fs(string source, string destination) {
     fstream SourceFile(source,ios::out | ios::in | ios::binary );
     fstream DestinationFile(Path, ios::out | ios::in | ios::binary);
 
-    if(!SourceFile.good()){
+    if(!SourceFile.is_open()){
         DestinationFile.close();
         printf("Source doesnt exist");
         return;
@@ -393,13 +432,29 @@ void Partition::copy_from_fs(string source, string destination) {
     //get blocks needed to save the file
     int blocksNeeded = getBlocksNeeded(fileSize);
     vector<int> emptyBlocks = getEmptyBlocks(blocksNeeded);
-            //printf("size of BLOCK: %d\n", sizeof(Block));
+    if(emptyBlocks.size()<=0){
+        printf("Sorry, can't copy file. unsuficient space.");
+        return;
+    }
 
+    copyFileData(SourceFile, DestinationFile, fileSize, blocksNeeded, emptyBlocks);
+    //printf("emptyBlocks: ",emptyBlocks[0]);
+    createFileV2(source,fileSize,emptyBlocks[0]);
+    freeBlocks->fillBitmap(emptyBlocks);
+    writeBitmap();
+
+
+}
+
+void Partition::copyFileData(fstream &SourceFile, fstream &DestinationFile, int fileSize, int blocksNeeded,
+                             const vector<int> &emptyBlocks) {
     Block block;
 
     int bufferSize = 4092;
     int bytesRemaining = fileSize;
+
     for (int i = 0; i < blocksNeeded; ++i) {
+
         int nextBlock = i+1;
         if(nextBlock == blocksNeeded)
             block.pointer = -1;
@@ -410,38 +465,66 @@ void Partition::copy_from_fs(string source, string destination) {
             bufferSize = bytesRemaining;
 
         SourceFile.read(block.buffer, bufferSize );
-        DestinationFile.seekp(getBlockPosition(emptyBlocks[nextBlock]));
+        printf("index: %d\n",emptyBlocks[i]);
+        DestinationFile.seekp(getBlockPosition(emptyBlocks[i]));
         DestinationFile.write(reinterpret_cast<const char *>(&block), BLOCK_SIZE );
         bytesRemaining -= bufferSize;
     }
+    SourceFile.close();
+    DestinationFile.close();
+}
 
-
-    createFileV2(source,fileSize,emptyBlocks[0]);
-    freeBlocks->fillBitmap(emptyBlocks);
-    writeBitmap();
+void Partition::writeBitmap() {
+    partition.open(Path, ios::out | ios::in | ios::binary);
+    if(partition.is_open()){
+        int blockOffset = getBlockPosition(2);
+        partition.seekp(blockOffset);
+        partition.write(reinterpret_cast<char*>(Bitmap),(_superBlock.block_number/8)*sizeof(byte));
+        partition.close();
+    }else{
+        printf("Error writing bitmap");
+    }
 
 
 }
 
-void Partition::copy_to_fs(string source, string destination) {
-    fstream SourceFile(source, ios::out | ios::in | ios::binary );
-    fstream DestinationFile(destination, ios::out | ios::in | ios::binary);
-
-    if(!SourceFile.good()){
-        DestinationFile.close();
-        printf("Source doesnt exist");
-        return;
+bool Partition::copy_to_fs(string source, string destination) {
+    //fstream SourceFile(source, ios::out | ios::in | ios::binary );
+    fstream DestinationPath(destination+'/'+source, ios::out | ios::binary | ios::app);
+    INode file_entry = fileExist(FAT,source);
+    if(!file_entry.status){
+        printf("Could not find file.");
+        return false;
     }
 
-    if(!DestinationFile.good()){
-        SourceFile.close();
-        printf("Destination file doesnt exist");
-        return;
+    partition.open(Path, ios::out | ios::in | ios::binary);
+    if(partition.is_open()){
+        //copy_out(file_entry,destination+'/'+source);
+        int bytesRemaining = file_entry.size;
+        int bufferSize = BLOCK_SIZE- sizeof(int);
+        Block buffer;
+        int offset = getBlockPosition(file_entry.first_block);
+        for (int i = 0; i < getBlocksNeeded(file_entry.size); ++i) {
+            if(bufferSize > bytesRemaining)
+                bufferSize = bytesRemaining;
+
+            partition.seekg(offset);
+            partition.read(reinterpret_cast<char *>(&buffer),BLOCK_SIZE);
+            printf("pointer: %d\n",buffer.pointer);
+            DestinationPath.write(reinterpret_cast<char *>(buffer.buffer),bufferSize);
+            offset = getBlockPosition(buffer.pointer);
+            bytesRemaining -= BLOCK_SIZE - sizeof(int);
+        }
+
+    }else{
+        printf("Error copying to fs");
+        return false;
     }
 
 
-
-
+    partition.close();
+    DestinationPath.close();
+    return true;
 
 
 }
@@ -455,25 +538,7 @@ int Partition::getBlocksNeeded(int bytes) {
 
 
 vector<int> Partition::getEmptyBlocks(int blocksNeeded) {
-    //int emptyBlocksArray[blocksNeeded]={0};
-    vector<int> b = freeBlocks->getAvailableBlocks(blocksNeeded);
-
-//    for(int i = 0; i< blocksNeeded ; i++){
-        printf("vector size: %d\n",b.size());
-//    }
-
-//    printf("bbool: %d\n",bitmapGet(Bitmap, 10));
-//    printf("bbool: %d\n",bitmapGet(Bitmap, 11));
-//    printf("bbool: %d\n",bitmapGet(Bitmap, 12));
-//    printf("bbool: %d\n",bitmapGet(Bitmap, 13));
-//    printf("bbool: %d\n",bitmapGet(Bitmap, 14));
-//    printf("bbool: %d\n",bitmapGet(Bitmap, 15));
-//    printf("bbool: %d\n",bitmapGet(Bitmap, 16));
-//    printf("bbool: %d\n",bitmapGet(Bitmap, 17));
-//    printf("bbool: %d\n",bitmapGet(Bitmap, 18));
-//    printf("bbool: %d\n",bitmapGet(Bitmap, 19));
-//    printf("bbool: %d\n",bitmapGet(Bitmap, 20));
-    return b;
+    return freeBlocks->getAvailableBlocks(blocksNeeded);
 
 }
 
@@ -511,6 +576,42 @@ void Partition::writeNewBitmapV2(int bitmap_size_bytes) {
     }
     partition.close();
 }
+
+INode Partition::fileExist(INode *FAT, string fileName) {
+    INode file_entry;
+    for(int i = 0 ; i < sizeof(this->FAT)/sizeof(INode) ; i++){
+        if(FAT[i].status==1 && strcmp(FAT[i].file_name,fileName.c_str()) == 0){
+            return FAT[i];
+        }
+    }
+    return file_entry;
+}
+
+void Partition::rename_file(string old_name, string new_name) {
+
+}
+
+void Partition::delete_file(string file_name) {
+
+}
+
+void Partition::readFat() {
+    partition.open(Path, ios::out | ios::in | ios::binary);
+    if(partition.is_open()){
+        int offset = getBlockPosition(1);
+        partition.seekg(offset);
+        partition.read(reinterpret_cast<char *>(&FAT), BLOCK_SIZE);
+        partition.close();
+    }else{
+        printf("Error: Could not read File Allocation Table\n");
+    }
+}
+
+void Partition::copy_out(INode node, string destination) {
+
+}
+
+
 
 
 

@@ -62,7 +62,7 @@ private:
 
     void writeFAT();
 
-    void createFileV2(string file_name, int size, int pointer_to_first_block);
+    bool createFileV2(string file_name, int size, int pointer_to_first_block);
 
     void listFilesV2(string partition_name);
 
@@ -74,8 +74,23 @@ private:
     void writeNewBitmapV2(int bitmap_size_bytes);
 
     void copy_from_fs(string source, string destination);
-    void copy_to_fs(string source, string destination);
+    bool copy_to_fs(string source, string destination);
     vector<int> getEmptyBlocks(int blocksNeeded);
+
+    void copyFileData(fstream &SourceFile, fstream &DestinationFile, int fileSize, int blocksNeeded,
+                      const vector<int> &emptyBlocks);
+
+    INode fileExist(INode FAT[128], string fileName);
+
+    void rename_file(string old_name, string new_name);
+
+    void delete_file(string file_name);
+
+    void readFat();
+
+    INode searchFile(string file_name);
+
+    void copy_out(INode node, string destination);
 };
 
 
