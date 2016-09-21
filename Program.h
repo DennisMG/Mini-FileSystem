@@ -35,6 +35,8 @@ private:
     vector<string> split(const string &s, char delim);
 
     void executeCommand(string basic_string);
+
+    void delete_block(string partition_name);
 };
 
 

@@ -17,15 +17,21 @@ Program::Program() {
 int Program::Run() {
     INode FAT[128];
     printf("Superbloc size: %d\n",sizeof(SuperBlock) );
-    cout<<".---------------------Welcome to My File System--------------------."<<endl;
-    cout<<"|    What do you want to do?                                       |  "<<endl;
-    cout<<"|1. List Partitions:     ls                                        |"<<endl;
-    cout<<"|2. Mount Partition:     mount <partition_name>                    |"<<endl;
-    cout<<"|3. Unmount Partition:   unmount                                   |"<<endl;
-    cout<<"|4. Delete Partition:    del <partition_name>                      |"<<endl;
-    cout<<"|5. Create Partition:    create <partition_name> <size_mb> <MB/GB> |"<<endl;
-    cout<<"|                                                                  |"<<endl;
-    cout<<".__________________________________________________________________."<<endl<<endl;
+    cout<<".-----------------------------Welcome to My File System-----------------------------."<<endl;
+    cout<<"|                                                                                   |"<<endl;
+    cout<<"|  Instruction List                                                                 |  "<<endl;
+    cout<<"|. List Partitions:             ls                                                  |"<<endl;
+    cout<<"|. Mount Partition:             mount <partition_name>                              |"<<endl;
+    cout<<"|. Unmount Partition:           unmount                                             |"<<endl;
+    cout<<"|. Delete Partition:            delete_block <partition_name>                       |"<<endl;
+    cout<<"|. Create Partition:            create_block <partition_name> <size_mb> <MB/GB>     |"<<endl;
+    cout<<"|. Copy from OS file system:    copy_from_fs <file_name>                            |"<<endl;
+    cout<<"|. Copy to OS file system:      copy_to_fs <file_name> <destination_path>           |"<<endl;
+    cout<<"|. Create empty file:           empty <file_name>                                   |"<<endl;
+    cout<<"|. Delete file:                 delete <file_name>                                  |"<<endl;
+    cout<<"|. Rename file:                 rename <file_name> <new_file_name>                  |"<<endl;
+    cout<<"|                                                                                   |"<<endl;
+    cout<<".___________________________________________________________________________________."<<endl<<endl;
 
     while(!terminate){
         printf("\n>>");
@@ -44,9 +50,9 @@ CLI Program::getCommand(string command) {
         token = LIST;
     }else if(tokens[0] == "mount"){
         token = MOUNT;
-    }else if(tokens[0] == "del"){
+    }else if(tokens[0] == "delete_block"){
         token = DEL;
-    }else if(tokens[0] == "create"){
+    }else if(tokens[0] == "create_block"){
         token = CREATE;
     }else if(tokens[0] == "exit"){
         token = EXIT;
@@ -74,6 +80,8 @@ void Program::executeCommand(string command) {
             break;
         case DEL:
             printf("Deleting partition...\n");
+            delete_block(parameters[1]);
+
             break;
         case CLEAR:
 
@@ -84,7 +92,7 @@ void Program::executeCommand(string command) {
             //printf("%d",size);
 
             if (parameters.size() > 4)
-                printf("ERROR: Invalid number of arguments! expected 3, received %d\n", ((int) parameters.size())-1);
+                printf("ERROR: Invalid number of arguments! expected 3, received %d\n Ej. create_block <partition_name> <size_mb> <MB/GB>\n", ((int) parameters.size())-1);
             else
                 partition->createPartition(parameters[1], parameters[2], parameters[3]);
             break;
@@ -115,4 +123,11 @@ void Program::split(const string &s, char delim, vector<string> &elems) {
         if (!item.empty())
             elems.push_back(item);
     }
+}
+
+void Program::delete_block(string partition_name) {
+    if( remove( partition_name.c_str() ) != 0 )
+        printf( "Error deleting file\n" );
+    else
+        printf( "File successfully deleted\n" );
 }

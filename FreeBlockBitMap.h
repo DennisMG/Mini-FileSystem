@@ -22,6 +22,10 @@ public:
 
     vector<int> getAvailableBlocks(int blocksNeeded);
     void fillBitmap(vector<int> blocksToFill);
+
+    void resetBytes(vector<int> blocksToReset);
+
+    int getFreeBlocksCount();
 };
 
 

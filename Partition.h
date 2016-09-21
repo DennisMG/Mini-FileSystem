@@ -60,7 +60,7 @@ private:
     vector<string> split(const string &s, char delim);
 
 
-    void writeFAT();
+    void writeEmptyFAT();
 
     bool createFileV2(string file_name, int size, int pointer_to_first_block);
 
@@ -88,9 +88,17 @@ private:
 
     void readFat();
 
-    INode searchFile(string file_name);
+    void copy_out(fstream &DestinationPath, const INode &file_entry);
 
-    void copy_out(INode node, string destination);
+    bool delete_file_from_directory(INode FAT[128], string fileName);
+
+    void writeFAT();
+
+    vector<int> getFileBlocks(INode node);
+
+    void getInfo();
+
+    bool lite_FileExist(string file_path);
 };
 
 
